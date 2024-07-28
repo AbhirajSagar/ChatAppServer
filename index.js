@@ -21,16 +21,14 @@ app.use(express.json());
 io.on('connection', socket => 
 {
     console.log('A user connected with Id :' + socket.id);
-    
     socket.on('get-partner',()=>
     {
         if(waitingUsers.length > 0)
         {
             const partner = waitingUsers.pop();
-            socket.join(partner);
+            socket.join(partner.id);
 
             socket.emit('user-connected',partner.id);
-            partner.emit('user-connected',socket.id);
         
             socket.on('disconnect', () => 
             {
@@ -39,17 +37,14 @@ io.on('connection', socket =>
                 
                 waitingUsers = waitingUsers.filter(user => user.id !== socket.id);
             });
-    
             socket.on('ice-candidate', (userId, iceCandidate) => 
             {
                 partner.emit('ice-candidate', userId, iceCandidate);
             });
-    
             socket.on('offer', (userId, offer) => 
             {
                 partner.emit('offer', userId, offer);
             });
-    
             socket.on('answer', (userId, answer) => 
             {
                 partner.emit('answer', userId, answer);
